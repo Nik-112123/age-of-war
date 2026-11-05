@@ -47,6 +47,7 @@ export function frameIndex(animTime, anim) {
 export function displayFrame(unit) {
   const anim = UNIT_TYPES[unit.type].animations[unit.animState]
   if (unit.animState === 'attack') {
+    if (unit.swing === null) return unit.attackFrame ?? (anim.restartFrame ?? 0)
     const step = Math.min(Math.floor(unit.swing * anim.fps), swingSteps(anim, unit.swingStart, unit.lowering))
     return attackFrameAt(anim, unit.swingStart, step)
   }
@@ -70,7 +71,7 @@ export function advanceAnimation(unit, dt) {
 
 function resolveAnimationState(unit) {
   if (unit.dying) return 'death'
-  if (unit.swing !== null) return 'attack'
+  if (unit.swing !== null || unit.attackHold) return 'attack'
   if (unit.moving) return 'walk'
   return 'idle'
 }

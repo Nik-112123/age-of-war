@@ -36,7 +36,9 @@ export function spawnUnit(state, team, typeId) {
     type: typeId,
     x: baseEdgeX(team) + TEAM_DIRECTION[team] * type.size / 2,
     hp: type.hp,
-    cooldown: 0,
+    attackPause: 0,
+    attackHold: false,
+    attackFrame: 0,
     moving: false,
     swing: null,
     swingStart: 0,
@@ -93,14 +95,19 @@ function updateUnit(state, unit, dt) {
   const type = UNIT_TYPES[unit.type]
   const dir = TEAM_DIRECTION[unit.team]
 
-  const target = findTarget(state, unit, type, dir)
-  if (unit.swing !== null) advanceSwing(state, unit, type, dt, target)
+  let target = findTarget(state, unit, type, dir)
+  const hadSwing = unit.swing !== null
+  if (hadSwing) advanceSwing(state, unit, type, dt, target)
 
+  target = findTarget(state, unit, type, dir)
+  unit.attackHold = Boolean(target)
   if (target) {
-    unit.cooldown -= dt
-    if (unit.cooldown <= 0 && unit.swing === null) startSwing(unit, type, target)
+    if (!hadSwing && unit.swing === null && unit.attackPause > 0) {
+      unit.attackPause = Math.max(0, unit.attackPause - dt)
+    }
+    if (unit.attackPause <= 0 && unit.swing === null) startSwing(unit, type, target)
   } else {
-    unit.cooldown = 0
+    unit.attackPause = 0
   }
 
   unit.moving = !target && unit.swing === null
@@ -122,6 +129,8 @@ function startSwing(unit, type, target) {
   const attack = type.animations.attack
   unit.swing = 0
   unit.swingStart = unit.hasSwung ? (attack.restartFrame ?? 0) : 0
+  unit.attackFrame = unit.swingStart
+  unit.attackPause = 0
   unit.swingStep = -1
   unit.swingTarget = target
   unit.hasSwung = true
@@ -137,8 +146,9 @@ function advanceSwing(state, unit, type, dt, target) {
   const elapsed = Math.floor(unit.swing * attack.fps)
   const reached = Math.min(elapsed, steps)
 
+  const forwardSteps = attack.frames - 1 - unit.swingStart
   if (!unit.lowering) {
-    for (let step = unit.swingStep + 1; step <= reached; step++) {
+    for (let step = unit.swingStep + 1; step <= Math.min(reached, forwardSteps); step++) {
       const frame = attackFrameAt(attack, unit.swingStart, step)
       if (type.hitFrames.includes(frame) && frame !== unit.lastShotFrame) {
         unit.lastShotFrame = frame
@@ -147,19 +157,22 @@ function advanceSwing(state, unit, type, dt, target) {
     }
   }
   unit.swingStep = reached
+  unit.attackFrame = attackFrameAt(attack, unit.swingStart, reached)
 
-  if (elapsed >= steps) finishSwing(unit, type)
+  if (elapsed >= steps) finishSwing(unit, type, steps)
 }
 
-function finishSwing(unit, type) {
+function finishSwing(unit, type, steps) {
+  unit.attackFrame = attackFrameAt(type.animations.attack, unit.swingStart, steps)
   unit.swing = null
   if (unit.lowering) {
     unit.lowering = false
     unit.hasSwung = false
     unit.lastShotFrame = null
+    unit.attackPause = 0
     return
   }
-  unit.cooldown = type.attackInterval
+  unit.attackPause = type.attackInterval
 }
 
 function strike(state, unit, type) {

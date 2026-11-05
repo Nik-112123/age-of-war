@@ -53,17 +53,25 @@ function drawBase(ctx, team, hp) {
 
 function drawUnit(ctx, unit) {
   const type = UNIT_TYPES[unit.type]
+  const animation = type.animations[unit.animState]
   const sheet = getAnimationSheet(unit.type, unit.animState)
   const frame = displayFrame(unit)
+  const sourceWidth = sheet.source.naturalWidth || sheet.source.width
+  const sourceHeight = sheet.source.naturalHeight || sheet.source.height
+  const rows = Math.ceil(animation.frames / sheet.columns)
+  const frameWidth = sourceWidth / sheet.columns
+  const frameHeight = sourceHeight / rows
   const col = frame % sheet.columns
   const row = Math.floor(frame / sheet.columns)
-  const sx = Math.round(col * sheet.frameWidth)
-  const sy = Math.round(row * sheet.frameHeight)
-  const sw = Math.round((col + 1) * sheet.frameWidth) - sx
-  const sh = Math.round((row + 1) * sheet.frameHeight) - sy
-  const scale = type.spriteHeight / sheet.frameHeight
-  const drawWidth = Math.round(sheet.frameWidth * scale)
-  const drawHeight = type.spriteHeight
+  const sx = Math.round(col * sourceWidth / sheet.columns)
+  const sy = Math.round(row * sourceHeight / rows)
+  const sw = Math.round((col + 1) * sourceWidth / sheet.columns) - sx
+  const sh = Math.round((row + 1) * sourceHeight / rows) - sy
+  const scale = type.spriteHeight / frameHeight
+  const drawWidth = Math.round(frameWidth * scale)
+  const drawHeight = Math.round(type.spriteHeight)
+  const drawX = Math.round(-drawWidth / 2)
+  const drawY = Math.round(-sheet.feetRatio * drawHeight)
   const flip = sheet.placeholder ? 1 : TEAM_DIRECTION[unit.team]
 
   ctx.save()
@@ -75,13 +83,10 @@ function drawUnit(ctx, unit) {
   ctx.restore()
 
   ctx.save()
-  ctx.translate(unit.x, WORLD.groundY)
+  ctx.translate(Math.round(unit.x), Math.round(WORLD.groundY))
   ctx.scale(flip, 1)
-  ctx.drawImage(
-    sheet.source,
-    sx, sy, sw, sh,
-    -drawWidth / 2, Math.round(-sheet.feetRatio * drawHeight), drawWidth, drawHeight,
-  )
+  ctx.imageSmoothingEnabled = false
+  ctx.drawImage(sheet.source, sx, sy, sw, sh, drawX, drawY, drawWidth, drawHeight)
   ctx.restore()
 
   if (!unit.dying) {
