@@ -31,10 +31,10 @@ const game = {
 
 // --- МЕНЕДЖЕР СПРАЙТОВ ---
 const spriteAssets = {
-    idle: { src: 'sprites/sniper/idle.png', img: new Image(), frames: 60 },
-    walk: { src: 'sprites/sniper/walk.png', img: new Image(), frames: 43 },
-    attack: { src: 'sprites/sniper/attack.png', img: new Image(), frames: 90 },
-    death: { src: 'sprites/sniper/death.png', img: new Image(), frames: 73 }
+    idle: { src: 'public/sprites/sniper/idle.png', img: new Image(), frames: 60 },
+    walk: { src: 'public/sprites/sniper/walk.png', img: new Image(), frames: 43 },
+    attack: { src: 'public/sprites/sniper/attack.png', img: new Image(), frames: 90 },
+    death: { src: 'public/sprites/sniper/death.png', img: new Image(), frames: 73 }
 };
 
 const SNIPER_CONFIG = {
