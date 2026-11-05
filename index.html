@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Стенка на стенку</title>
+    <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">Стенка на стенку</div>
+        <div class="topbar__controls">
+          <div class="gold">
+            <span class="gold__coin" aria-hidden="true"></span>
+            <span id="gold" class="gold__value">0</span>
+            <span id="gold-rate" class="gold__rate"></span>
+          </div>
+          <button id="pause" type="button" class="pause">Пауза</button>
+        </div>
+      </header>
+
+      <section id="unit-buttons" class="unit-buttons" aria-label="Наем юнитов"></section>
+
+      <div class="field">
+        <canvas id="field" aria-label="Поле боя"></canvas>
+        <div id="result" class="result" hidden>
+          <h2 id="result-title" class="result__title"></h2>
+          <button id="restart" type="button" class="restart">Играть снова</button>
+        </div>
+      </div>
+      <p class="field-hint">Перетаскивайте поле мышкой, чтобы осмотреть бой. Колесико приближает и отдаляет поле.</p>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
